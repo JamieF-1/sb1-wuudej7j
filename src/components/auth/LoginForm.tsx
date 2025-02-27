@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { TestLoginHelper } from './TestLoginHelper';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -7,11 +9,12 @@ export default function LoginForm() {
   const [error, setError] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
   const { signIn, signUp } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    
+
     try {
       if (isSignUp) {
         try {
@@ -30,6 +33,7 @@ export default function LoginForm() {
       } else {
         try {
           await signIn(email, password);
+          navigate('/dashboard'); // Redirect after successful login
         } catch (err: any) {
           // Handle specific signin errors
           if (err.message?.includes('invalid_credentials') || err?.error?.message?.includes('invalid_credentials')) {
@@ -52,11 +56,12 @@ export default function LoginForm() {
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             {isSignUp ? 'Create an account' : 'Sign in to your account'}
           </h2>
+          <TestLoginHelper /> {/* Added TestLoginHelper component */}
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div className={`px-4 py-3 rounded relative ${
-              error.includes('Check your email') 
+              error.includes('Check your email')
                 ? 'bg-green-50 border border-green-200 text-green-700'
                 : 'bg-red-50 border border-red-200 text-red-700'
             }`}>
@@ -106,7 +111,7 @@ export default function LoginForm() {
               {isSignUp ? 'Sign up' : 'Sign in'}
             </button>
           </div>
-          
+
           <div className="text-center">
             <button
               type="button"
