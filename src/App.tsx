@@ -9,7 +9,7 @@ import FanLaws from "./components/tools/FanLaws";
 import EnergyEfficiency from "./components/tools/EnergyEfficiency";
 import { ToolsGrid } from "./components/tools/ToolsComponents";
 
-export default function App() {
+function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -27,3 +27,5 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
+export default App;
