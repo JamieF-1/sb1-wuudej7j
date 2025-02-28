@@ -1,231 +1,244 @@
 
 import React, { useState } from 'react';
+import { Wind } from 'lucide-react';
 
-interface Room {
-  id: string;
-  name: string;
-  area: number;
-  desiredAirChanges: number;
-  calculatedFlow?: number;
+interface AirBalanceData {
+  systemType: string;
+  totalAirflow: number;
+  zones: Array<{
+    id: string;
+    name: string;
+    requiredAirflow: number;
+    actualAirflow: number | null;
+    percentOfDesign: number | null;
+  }>;
 }
 
 export default function AirBalance() {
-  const [rooms, setRooms] = useState<Room[]>([
-    { id: '1', name: 'Living Room', area: 20, desiredAirChanges: 4 },
-    { id: '2', name: 'Bedroom', area: 15, desiredAirChanges: 3 },
-    { id: '3', name: 'Kitchen', area: 12, desiredAirChanges: 8 }
-  ]);
-  const [newRoom, setNewRoom] = useState<Partial<Room>>({ name: '', area: 0, desiredAirChanges: 4 });
-  const [calculatedResults, setCalculatedResults] = useState(false);
-  const [totalFlow, setTotalFlow] = useState(0);
+  const [data, setData] = useState<AirBalanceData>({
+    systemType: 'vav',
+    totalAirflow: 1000,
+    zones: [
+      { id: '1', name: 'Zone 1', requiredAirflow: 250, actualAirflow: null, percentOfDesign: null },
+      { id: '2', name: 'Zone 2', requiredAirflow: 250, actualAirflow: null, percentOfDesign: null },
+      { id: '3', name: 'Zone 3', requiredAirflow: 250, actualAirflow: null, percentOfDesign: null },
+      { id: '4', name: 'Zone 4', requiredAirflow: 250, actualAirflow: null, percentOfDesign: null }
+    ]
+  });
 
-  const addRoom = () => {
-    if (newRoom.name && newRoom.area) {
-      setRooms([
-        ...rooms, 
-        { 
-          id: Date.now().toString(), 
-          name: newRoom.name, 
-          area: Number(newRoom.area), 
-          desiredAirChanges: Number(newRoom.desiredAirChanges) || 4 
-        }
-      ]);
-      setNewRoom({ name: '', area: 0, desiredAirChanges: 4 });
-    }
+  const addZone = () => {
+    const newZone = {
+      id: Date.now().toString(),
+      name: `Zone ${data.zones.length + 1}`,
+      requiredAirflow: 0,
+      actualAirflow: null,
+      percentOfDesign: null
+    };
+    setData({...data, zones: [...data.zones, newZone]});
   };
 
-  const removeRoom = (id: string) => {
-    setRooms(rooms.filter(room => room.id !== id));
-    setCalculatedResults(false);
+  const removeZone = (id: string) => {
+    setData({...data, zones: data.zones.filter(zone => zone.id !== id)});
   };
 
-  const updateRoom = (id: string, updates: Partial<Room>) => {
-    setRooms(rooms.map(room => 
-      room.id === id ? { ...room, ...updates } : room
-    ));
-    setCalculatedResults(false);
-  };
-
-  const calculateAirflow = () => {
-    // Heights are assumed to be standard 2.5m per room
-    const roomHeight = 2.5; // meters
-    
-    const updatedRooms = rooms.map(room => {
-      // Calculate volume
-      const volume = room.area * roomHeight; // m³
-      
-      // Calculate required air flow in m³/h based on air changes per hour
-      const airflow = volume * room.desiredAirChanges;
-      
-      return {
-        ...room,
-        calculatedFlow: Math.round(airflow)
-      };
+  const updateZone = (id: string, field: string, value: any) => {
+    const updatedZones = data.zones.map(zone => {
+      if (zone.id === id) {
+        return { ...zone, [field]: value };
+      }
+      return zone;
     });
-    
-    setRooms(updatedRooms);
-    setTotalFlow(updatedRooms.reduce((sum, room) => sum + (room.calculatedFlow || 0), 0));
-    setCalculatedResults(true);
+    setData({...data, zones: updatedZones});
+  };
+
+  const calculatePercentages = () => {
+    const updatedZones = data.zones.map(zone => {
+      const percentOfDesign = zone.actualAirflow 
+        ? parseFloat(((zone.actualAirflow / zone.requiredAirflow) * 100).toFixed(1))
+        : null;
+      return { ...zone, percentOfDesign };
+    });
+    setData({...data, zones: updatedZones});
+  };
+
+  const getTotalRequiredAirflow = () => {
+    return data.zones.reduce((total, zone) => total + zone.requiredAirflow, 0);
+  };
+
+  const getTotalActualAirflow = () => {
+    return data.zones.reduce((total, zone) => total + (zone.actualAirflow || 0), 0);
+  };
+
+  const getSystemBalance = () => {
+    const totalRequired = getTotalRequiredAirflow();
+    const totalActual = getTotalActualAirflow();
+    return totalRequired ? parseFloat(((totalActual / totalRequired) * 100).toFixed(1)) : 0;
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Air Balance Calculator</h2>
+    <div className="p-6">
+      <div className="flex items-center mb-6">
+        <Wind className="h-6 w-6 text-blue-500 mr-2" />
+        <h1 className="text-2xl font-bold">Air Balance Calculator</h1>
+      </div>
       
-      <div className="mb-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Enter Room Details</h3>
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room Name</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Area (m²)</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Air Changes/Hour</th>
-                {calculatedResults && (
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Required Airflow (m³/h)</th>
-                )}
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {rooms.map(room => (
-                <tr key={room.id}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="text"
-                      value={room.name}
-                      onChange={(e) => updateRoom(room.id, { name: e.target.value })}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="number"
-                      value={room.area}
-                      onChange={(e) => updateRoom(room.id, { area: parseFloat(e.target.value) })}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <input
-                      type="number"
-                      value={room.desiredAirChanges}
-                      onChange={(e) => updateRoom(room.id, { desiredAirChanges: parseFloat(e.target.value) })}
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    />
-                  </td>
-                  {calculatedResults && (
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm font-medium text-gray-900">{room.calculatedFlow} m³/h</span>
-                    </td>
-                  )}
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button
-                      onClick={() => removeRoom(room.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="text"
-                    value={newRoom.name}
-                    onChange={(e) => setNewRoom({...newRoom, name: e.target.value})}
-                    placeholder="Room name"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="number"
-                    value={newRoom.area || ''}
-                    onChange={(e) => setNewRoom({...newRoom, area: parseFloat(e.target.value)})}
-                    placeholder="Area in m²"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="number"
-                    value={newRoom.desiredAirChanges || ''}
-                    onChange={(e) => setNewRoom({...newRoom, desiredAirChanges: parseFloat(e.target.value)})}
-                    placeholder="Air changes per hour"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  />
-                </td>
-                {calculatedResults && <td></td>}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={addRoom}
-                    disabled={!newRoom.name || !newRoom.area}
-                    className="text-blue-600 hover:text-blue-900 disabled:text-gray-400"
-                  >
-                    Add Room
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              System Type
+            </label>
+            <select
+              value={data.systemType}
+              onChange={(e) => setData({...data, systemType: e.target.value})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="vav">VAV System</option>
+              <option value="cav">CAV System</option>
+              <option value="vrf">VRF/VRV with Ducted Units</option>
+              <option value="doas">DOAS</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Total Design Airflow (L/s)
+            </label>
+            <input
+              type="number"
+              value={data.totalAirflow || ''}
+              onChange={(e) => setData({...data, totalAirflow: parseFloat(e.target.value) || 0})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
         </div>
-      </div>
-      
-      <div className="flex justify-center mb-6">
-        <button
-          onClick={calculateAirflow}
-          disabled={rooms.length === 0}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          Calculate Air Balance
-        </button>
-      </div>
-      
-      {calculatedResults && (
-        <div className="mt-6 border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Results</h3>
-          <div className="bg-gray-50 p-4 rounded-md">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm font-medium text-gray-500">Total System Airflow Required</p>
-                <p className="text-lg font-semibold">{totalFlow} m³/h</p>
-                <p className="text-sm text-gray-500 mt-1">({Math.round(totalFlow / 3.6)} L/s)</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Required Fan Power (estimated)</p>
-                <p className="text-lg font-semibold">{Math.round(totalFlow * 0.35 / 1000)} kW</p>
-                <p className="text-sm text-gray-500 mt-1">Based on typical fan efficiency</p>
-              </div>
-            </div>
+        
+        <div className="border-t border-gray-200 pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-medium text-gray-900">Zone Configuration</h2>
+            <button
+              onClick={addZone}
+              className="py-1 px-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Add Zone
+            </button>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zone Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Required (L/s)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual (L/s)</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">% of Design</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {data.zones.map((zone) => (
+                  <tr key={zone.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="text"
+                        value={zone.name}
+                        onChange={(e) => updateZone(zone.id, 'name', e.target.value)}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="number"
+                        value={zone.requiredAirflow || ''}
+                        onChange={(e) => updateZone(zone.id, 'requiredAirflow', parseFloat(e.target.value) || 0)}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <input
+                        type="number"
+                        value={zone.actualAirflow || ''}
+                        onChange={(e) => updateZone(zone.id, 'actualAirflow', parseFloat(e.target.value) || 0)}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {zone.percentOfDesign !== null ? (
+                        <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${zone.percentOfDesign > 110 ? 'bg-red-100 text-red-800' : 
+                          zone.percentOfDesign < 90 ? 'bg-yellow-100 text-yellow-800' : 
+                          'bg-green-100 text-green-800'}`}>
+                          {zone.percentOfDesign}%
+                        </span>
+                      ) : '-'}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <button
+                        onClick={() => removeZone(zone.id)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot className="bg-gray-50">
+                <tr>
+                  <td className="px-6 py-3 text-sm font-medium">Totals</td>
+                  <td className="px-6 py-3 text-sm font-medium">{getTotalRequiredAirflow()}</td>
+                  <td className="px-6 py-3 text-sm font-medium">{getTotalActualAirflow()}</td>
+                  <td className="px-6 py-3 text-sm font-medium">
+                    {getSystemBalance() > 0 ? (
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                      ${getSystemBalance() > 110 ? 'bg-red-100 text-red-800' : 
+                        getSystemBalance() < 90 ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-green-100 text-green-800'}`}>
+                        {getSystemBalance()}%
+                      </span>
+                    ) : '-'}
+                  </td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
           </div>
           
           <div className="mt-6">
-            <h4 className="font-medium text-gray-700 mb-2">Typical Air Changes per Hour</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h5 className="font-medium text-gray-700 mb-2">Commercial Spaces</h5>
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  <li>Offices: 4-8 ACH</li>
-                  <li>Conference Rooms: 6-10 ACH</li>
-                  <li>Restaurants: 8-12 ACH</li>
-                  <li>Kitchens: 15-30 ACH</li>
-                </ul>
-              </div>
-              <div>
-                <h5 className="font-medium text-gray-700 mb-2">Residential Spaces</h5>
-                <ul className="list-disc list-inside space-y-1 text-gray-600">
-                  <li>Living Rooms: 3-6 ACH</li>
-                  <li>Bedrooms: 2-4 ACH</li>
-                  <li>Bathrooms: 6-12 ACH</li>
-                  <li>Kitchens: 7-15 ACH</li>
-                </ul>
-              </div>
+            <button
+              onClick={calculatePercentages}
+              className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Calculate Percentages
+            </button>
+          </div>
+        </div>
+        
+        <div className="mt-8 border-t border-gray-200 pt-6">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Air Balance Guidelines</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Acceptable Tolerances</h4>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                <li>Supply air: ±10% of design</li>
+                <li>Return air: ±10% of design</li>
+                <li>Exhaust air: ±10% of design</li>
+                <li>Outdoor air: +10% to -5% of design</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Common Issues</h4>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                <li>Dirty filters or coils</li>
+                <li>Fan belt slippage</li>
+                <li>Damper malfunctions</li>
+                <li>Duct leakage or blockage</li>
+                <li>Fan speed settings</li>
+              </ul>
             </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

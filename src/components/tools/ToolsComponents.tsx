@@ -1,5 +1,15 @@
-
 import React from 'react';
+import RefrigerantComparator from './RefrigerantComparator';
+import DuctCalculator from './DuctCalculator';
+import VentilationCalculator from './VentilationCalculator';
+import UnitConverter from './UnitConverter';
+import PsychrometricCalculator from './PsychrometricCalculator';
+import HeatLoadCalculator from './HeatLoadCalculator';
+import PipeSizing from './PipeSizing';
+import RefrigerantCharge from './RefrigerantCharge';
+import AirBalance from './AirBalance';
+import FanLaws from './FanLaws';
+import EnergyEfficiency from './EnergyEfficiency';
 
 export function RefrigerantComparator() {
   return (
@@ -154,3 +164,17 @@ export function EnergyEfficiency() {
     </div>
   );
 }
+
+export {
+  RefrigerantComparator,
+  DuctCalculator,
+  VentilationCalculator,
+  UnitConverter,
+  PsychrometricCalculator,
+  HeatLoadCalculator,
+  PipeSizing,
+  RefrigerantCharge,
+  AirBalance,
+  FanLaws,
+  EnergyEfficiency
+};

@@ -1,175 +1,173 @@
 
 import React, { useState } from 'react';
+import { Pipe } from 'lucide-react';
 
-interface PipeCalculation {
-  pipeMaterial: 'copper' | 'steel' | 'pvc';
-  fluidType: 'water' | 'refrigerant';
+interface PipeSizingData {
   flowRate: number;
-  length: number;
-  calculatedDiameter?: number;
-  velocityLimits?: { min: number; max: number };
-  pressureDrop?: number;
+  fluidType: string;
+  velocityLimit: number;
+  pipeMaterial: string;
+  calculatedDiameter: number | null;
+  pressure: number | null;
 }
 
 export default function PipeSizing() {
-  const [pipe, setPipe] = useState<PipeCalculation>({
-    pipeMaterial: 'copper',
-    fluidType: 'water',
+  const [data, setData] = useState<PipeSizingData>({
     flowRate: 0,
-    length: 0
+    fluidType: 'water',
+    velocityLimit: 2.0,
+    pipeMaterial: 'copper',
+    calculatedDiameter: null,
+    pressure: null
   });
-  const [results, setResults] = useState<{ 
-    recommendedSize: string;
-    velocity: number;
-    pressureDrop: number;
-  } | null>(null);
 
-  const calculatePipeSizing = () => {
-    // This is a simplified calculation for demonstration purposes
-    // In a real application, you would use more complex formulas based on fluid dynamics
+  const calculatePipeSize = () => {
+    // Basic pipe sizing calculation (simplified)
+    // Formula: Diameter = sqrt((4 * Flow Rate) / (π * Velocity Limit))
+    const flowRateM3s = data.flowRate / 3600; // Convert from m³/h to m³/s
+    const area = flowRateM3s / data.velocityLimit;
+    const diameter = Math.sqrt((4 * area) / Math.PI) * 1000; // Convert to mm
     
-    // Velocity limits based on pipe material and fluid type (m/s)
-    const velocityLimits = {
-      copper: { water: { min: 0.5, max: 2.5 }, refrigerant: { min: 4, max: 15 } },
-      steel: { water: { min: 0.5, max: 3 }, refrigerant: { min: 5, max: 20 } },
-      pvc: { water: { min: 0.5, max: 2 }, refrigerant: { min: 3, max: 12 } }
-    };
-
-    // Get velocity limits based on pipe material and fluid type
-    const limits = velocityLimits[pipe.pipeMaterial][pipe.fluidType];
+    // Simplified pressure drop calculation
+    // This is a very basic approximation
+    let pressureFactor = 1.0;
+    if (data.pipeMaterial === 'copper') pressureFactor = 0.8;
+    if (data.pipeMaterial === 'pvc') pressureFactor = 0.6;
+    if (data.pipeMaterial === 'steel') pressureFactor = 1.2;
     
-    // Simplified formulas for pipe diameter calculation (for demonstration)
-    const avgVelocity = (limits.min + limits.max) / 2;
+    const pressureDrop = (data.flowRate * data.flowRate * pressureFactor) / (diameter * diameter) * 0.01;
     
-    // Area = Flow Rate / Velocity
-    // Diameter = sqrt(4 * Area / π)
-    const flowRateM3s = pipe.flowRate / 1000 / 3600; // Convert from L/h to m³/s
-    const area = flowRateM3s / avgVelocity; // m²
-    const diameter = Math.sqrt(4 * area / Math.PI) * 1000; // Convert to mm
-    
-    // Simplified pressure drop calculation (for demonstration)
-    // Using Darcy-Weisbach equation with simplifications
-    const roughness = { copper: 0.0015, steel: 0.045, pvc: 0.007 }[pipe.pipeMaterial];
-    const frictionFactor = 0.02; // Simplified constant for demonstration
-    const density = pipe.fluidType === 'water' ? 1000 : 1.2; // kg/m³
-    
-    const pressureDrop = frictionFactor * (pipe.length / (diameter/1000)) * 
-                          (density * Math.pow(avgVelocity, 2)) / 2;
-    
-    // Find nearest standard pipe size (simplified)
-    const standardSizes = [15, 22, 28, 35, 42, 54, 67, 76, 108];
-    let recommendedSize = standardSizes[0];
-    for (const size of standardSizes) {
-      if (diameter <= size) {
-        recommendedSize = size;
-        break;
-      }
-    }
-    
-    setResults({
-      recommendedSize: `${recommendedSize} mm`,
-      velocity: parseFloat(avgVelocity.toFixed(2)),
-      pressureDrop: parseFloat((pressureDrop / 1000).toFixed(2)) // Convert to kPa
+    setData({
+      ...data,
+      calculatedDiameter: parseFloat(diameter.toFixed(2)),
+      pressure: parseFloat(pressureDrop.toFixed(2))
     });
   };
 
   return (
-    <div className="bg-white shadow-md rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-6">Pipe Sizing Calculator</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Pipe Material
-          </label>
-          <select
-            value={pipe.pipeMaterial}
-            onChange={(e) => setPipe({ ...pipe, pipeMaterial: e.target.value as 'copper' | 'steel' | 'pvc' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="copper">Copper</option>
-            <option value="steel">Steel</option>
-            <option value="pvc">PVC</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Fluid Type
-          </label>
-          <select
-            value={pipe.fluidType}
-            onChange={(e) => setPipe({ ...pipe, fluidType: e.target.value as 'water' | 'refrigerant' })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          >
-            <option value="water">Water</option>
-            <option value="refrigerant">Refrigerant</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Flow Rate (L/hour)
-          </label>
-          <input
-            type="number"
-            value={pipe.flowRate || ''}
-            onChange={(e) => setPipe({ ...pipe, flowRate: parseFloat(e.target.value) })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Pipe Length (m)
-          </label>
-          <input
-            type="number"
-            value={pipe.length || ''}
-            onChange={(e) => setPipe({ ...pipe, length: parseFloat(e.target.value) })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          />
-        </div>
+    <div className="p-6">
+      <div className="flex items-center mb-6">
+        <Pipe className="h-6 w-6 text-blue-500 mr-2" />
+        <h1 className="text-2xl font-bold">Pipe Sizing Calculator</h1>
       </div>
       
-      <div className="flex justify-center">
-        <button
-          onClick={calculatePipeSizing}
-          disabled={!pipe.flowRate || !pipe.length}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
-        >
-          Calculate
-        </button>
-      </div>
-      
-      {results && (
-        <div className="mt-6 border-t border-gray-200 pt-4">
-          <h3 className="text-lg font-medium text-gray-900 mb-4">Results</h3>
-          <div className="bg-gray-50 p-4 rounded-md">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Flow Rate (m³/h)
+            </label>
+            <input
+              type="number"
+              value={data.flowRate || ''}
+              onChange={(e) => setData({...data, flowRate: parseFloat(e.target.value) || 0})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Fluid Type
+            </label>
+            <select
+              value={data.fluidType}
+              onChange={(e) => setData({...data, fluidType: e.target.value})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="water">Water</option>
+              <option value="glycol">Glycol Solution</option>
+              <option value="refrigerant">Refrigerant</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Velocity Limit (m/s)
+            </label>
+            <input
+              type="number"
+              step="0.1"
+              value={data.velocityLimit || ''}
+              onChange={(e) => setData({...data, velocityLimit: parseFloat(e.target.value) || 0})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Pipe Material
+            </label>
+            <select
+              value={data.pipeMaterial}
+              onChange={(e) => setData({...data, pipeMaterial: e.target.value})}
+              className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            >
+              <option value="copper">Copper</option>
+              <option value="pvc">PVC</option>
+              <option value="steel">Steel</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="mt-6">
+          <button
+            onClick={calculatePipeSize}
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            Calculate Pipe Size
+          </button>
+        </div>
+        
+        {data.calculatedDiameter !== null && (
+          <div className="mt-6 p-4 bg-blue-50 rounded-md">
+            <h3 className="text-lg font-medium text-blue-800 mb-2">Results</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm font-medium text-gray-500">Recommended Pipe Size</p>
-                <p className="text-lg font-semibold">{results.recommendedSize}</p>
+                <p className="text-sm text-gray-600">Calculated Pipe Diameter:</p>
+                <p className="text-lg font-medium">{data.calculatedDiameter} mm</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Nearest standard sizes:
+                  {data.calculatedDiameter <= 15 ? " 15mm (1/2\")" : 
+                   data.calculatedDiameter <= 22 ? " 22mm (3/4\")" : 
+                   data.calculatedDiameter <= 28 ? " 28mm (1\")" : 
+                   data.calculatedDiameter <= 35 ? " 35mm (1 1/4\")" : 
+                   data.calculatedDiameter <= 42 ? " 42mm (1 1/2\")" : 
+                   " 54mm (2\")"}
+                </p>
               </div>
               <div>
-                <p className="text-sm font-medium text-gray-500">Average Velocity</p>
-                <p className="text-lg font-semibold">{results.velocity} m/s</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-500">Pressure Drop</p>
-                <p className="text-lg font-semibold">{results.pressureDrop} kPa/m</p>
+                <p className="text-sm text-gray-600">Estimated Pressure Drop:</p>
+                <p className="text-lg font-medium">{data.pressure} kPa/m</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Recommended range: 0.1 - 0.4 kPa/m
+                </p>
               </div>
             </div>
           </div>
-          
-          <div className="mt-6">
-            <h4 className="font-medium text-gray-700 mb-2">Design Notes</h4>
-            <ul className="list-disc list-inside space-y-1 text-gray-600">
-              <li>Recommended velocities for water in copper pipes: 0.5 - 2.5 m/s</li>
-              <li>Recommended velocities for refrigerant in copper pipes: 4 - 15 m/s</li>
-              <li>Keep pressure drop below 200 Pa/m for most HVAC applications</li>
-              <li>Consider additional pressure losses from fittings and components</li>
-            </ul>
+        )}
+        
+        <div className="mt-8">
+          <h3 className="text-lg font-medium text-gray-900 mb-4">Recommended Velocity Limits</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Water Systems</h4>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                <li>Supply mains: 1.2 - 2.1 m/s</li>
+                <li>Risers: 0.9 - 1.5 m/s</li>
+                <li>Branch lines: 0.6 - 1.2 m/s</li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-700 mb-2">Refrigerant Lines</h4>
+              <ul className="list-disc list-inside space-y-1 text-gray-600">
+                <li>Suction lines: 4.5 - 20 m/s</li>
+                <li>Discharge lines: 10 - 18 m/s</li>
+                <li>Liquid lines: 0.5 - 1.5 m/s</li>
+              </ul>
+            </div>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

@@ -1,9 +1,8 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Wrench, Clipboard, BarChart, FileText } from 'lucide-react';
-import { useAuth } from '../components/auth/AuthContext';
 import { supabase } from '../lib/supabaseClient';
-import Header from './layout/Header';
+import { useAuth } from './auth/AuthContext';
 
 interface RecentForm {
   id: string;
@@ -70,56 +69,43 @@ export default function Dashboard() {
   }, [user]);
 
   return (
-    <div 
-      className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50"
-      style={{
-        backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.95)), url(${backgroundImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed'
-      }}
-    >
-      <Header />
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url(${backgroundImage})` }}>
       <div className="container mx-auto px-4 py-8">
-        {/* Main Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* Quick Links */}
-          <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
-              <div className="grid grid-cols-2 gap-4">
-                <Link
-                  to="/fgas-form"
-                  className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-                >
-                  <Clipboard className="h-8 w-8 text-blue-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-700">New F-Gas Log</span>
-                </Link>
-                <Link
-                  to="/vrf-commissioning"
-                  className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-                >
-                  <BarChart className="h-8 w-8 text-green-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-700">VRF Commissioning</span>
-                </Link>
-                <Link
-                  to="/breakdown-form"
-                  className="flex flex-col items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-                >
-                  <Wrench className="h-8 w-8 text-red-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-700">Breakdown Report</span>
-                </Link>
-                <Link
-                  to="/tools"
-                  className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-                >
-                  <FileText className="h-8 w-8 text-purple-600 mb-2" />
-                  <span className="text-sm font-medium text-gray-700">Tools & Calculators</span>
-                </Link>
-              </div>
-            </div>
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-8 drop-shadow-lg">HVAC Service Dashboard</h1>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            <Link to="/fgas-form" className="bg-white/90 backdrop-blur-sm hover:bg-white/100 transition-all shadow-lg rounded-lg p-6 flex flex-col items-center">
+              <div className="text-4xl text-blue-500 mb-4">🧊</div>
+              <h2 className="text-xl font-semibold text-center mb-2">F-Gas Record</h2>
+              <p className="text-gray-600 text-center">Document refrigerant usage and system checks</p>
+            </Link>
+            
+            <Link to="/vrf-commissioning" className="bg-white/90 backdrop-blur-sm hover:bg-white/100 transition-all shadow-lg rounded-lg p-6 flex flex-col items-center">
+              <div className="text-4xl text-green-500 mb-4">🔧</div>
+              <h2 className="text-xl font-semibold text-center mb-2">VRF Commissioning</h2>
+              <p className="text-gray-600 text-center">Complete commissioning records for VRF systems</p>
+            </Link>
+            
+            <Link to="/breakdown-form" className="bg-white/90 backdrop-blur-sm hover:bg-white/100 transition-all shadow-lg rounded-lg p-6 flex flex-col items-center">
+              <div className="text-4xl text-red-500 mb-4">🔥</div>
+              <h2 className="text-xl font-semibold text-center mb-2">Breakdown Report</h2>
+              <p className="text-gray-600 text-center">Document system failures and repairs</p>
+            </Link>
+            
+            <Link to="/tools" className="bg-white/90 backdrop-blur-sm hover:bg-white/100 transition-all shadow-lg rounded-lg p-6 flex flex-col items-center">
+              <div className="text-4xl text-purple-500 mb-4">🧰</div>
+              <h2 className="text-xl font-semibold text-center mb-2">HVAC Tools</h2>
+              <p className="text-gray-600 text-center">Access calculation tools and references</p>
+            </Link>
+            
+            <Link to="/history" className="bg-white/90 backdrop-blur-sm hover:bg-white/100 transition-all shadow-lg rounded-lg p-6 flex flex-col items-center">
+              <div className="text-4xl text-yellow-500 mb-4">📋</div>
+              <h2 className="text-xl font-semibold text-center mb-2">Service History</h2>
+              <p className="text-gray-600 text-center">View past service records and reports</p>
+            </Link>
           </div>
-
+          
           {/* Recent Forms */}
           <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
             <div className="p-6">
@@ -143,21 +129,18 @@ export default function Dashboard() {
                       {recentForms.map((form) => (
                         <tr key={form.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
                               {form.type === 'fgas' ? 'F-Gas' : form.type === 'vrf' ? 'VRF' : 'Breakdown'}
                             </span>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{form.site_name || 'Unknown'}</td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-900">{form.site_name || 'N/A'}</span>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                              ${form.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                form.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-gray-100 text-gray-800'}`}>
-                              {form.status === 'completed' ? 'Completed' : 
-                                form.status === 'in_progress' ? 'In Progress' : 
-                                form.status}
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              form.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                              form.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {form.status}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

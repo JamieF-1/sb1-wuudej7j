@@ -1,120 +1,184 @@
-import React from 'react';
-import { Link, Outlet, useLocation } from 'react-router-dom';
-import { 
-  Thermometer, Calculator, Wind, ArrowLeftRight, 
-  Home, Droplets, Gauge, Fan, Zap, Scale, 
-  BarChart, ThermometerSun 
-} from 'lucide-react';
 
 import React from 'react';
-import { Link, useLocation, Outlet } from 'react-router-dom';
+import { Outlet, NavLink } from 'react-router-dom';
 import { 
-  Home, Thermometer, Calculator, Wind, ArrowLeftRight, 
-  Droplets, ThermometerSun, Gauge, Scale, BarChart, 
-  Fan, Zap 
+  Thermometer, 
+  Wind, 
+  Scale, 
+  Droplet, 
+  BarChart, 
+  Pipe,
+  Gauge,
+  Fan,
+  Zap
 } from 'lucide-react';
-
-const tools = [
-  {
-    name: 'Refrigerant Comparator',
-    path: '/tools/refrigerant',
-    icon: Thermometer,
-  },
-  {
-    name: 'Duct Calculator',
-    path: '/tools/duct',
-    icon: Calculator,
-  },
-  {
-    name: 'Ventilation Calculator',
-    path: '/tools/ventilation',
-    icon: Wind,
-  },
-  {
-    name: 'Unit Converter',
-    path: '/tools/converter',
-    icon: ArrowLeftRight,
-  },
-  {
-    name: 'Psychrometric Calculator',
-    path: '/tools/psychrometric',
-    icon: Droplets,
-  },
-  {
-    name: 'Heat Load Calculator',
-    path: '/tools/heat-load',
-    icon: ThermometerSun,
-  },
-  {
-    name: 'Pipe Sizing',
-    path: '/tools/pipe-sizing',
-    icon: Gauge,
-  },
-  {
-    name: 'Refrigerant Charge',
-    path: '/tools/refrigerant-charge',
-    icon: Scale,
-  },
-  {
-    name: 'Air Balance',
-    path: '/tools/air-balance',
-    icon: BarChart,
-  },
-  {
-    name: 'Fan Laws',
-    path: '/tools/fan-laws',
-    icon: Fan,
-  },
-  {
-    name: 'Energy Efficiency',
-    path: '/tools/energy',
-    icon: Zap,
-  },
-];
 
 export default function ToolsLayout() {
-  const location = useLocation();
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between">
-            <div className="flex items-center py-4">
-              <Link
-                to="/"
-                className="flex items-center text-gray-600 hover:text-gray-900"
-              >
-                <Home className="h-5 w-5 mr-2" />
-                Home
-              </Link>
-            </div>
-            <div className="flex flex-wrap gap-4 py-4">
-              {tools.map((tool) => {
-                const Icon = tool.icon;
-                return (
-                  <Link
-                    key={tool.path}
-                    to={tool.path}
-                    className={`flex items-center px-3 py-2 text-sm font-medium rounded-md ${
-                      location.pathname === tool.path
-                        ? 'text-white bg-blue-600'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="h-5 w-5 mr-2" />
-                    {tool.name}
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">HVAC Technical Tools</h1>
+        
+        <div className="flex flex-wrap gap-2 mb-8 overflow-x-auto pb-2">
+          <NavLink
+            to="/tools/refrigerant"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Thermometer className="h-4 w-4 mr-1" />
+            Refrigerant Comparator
+          </NavLink>
+          
+          <NavLink
+            to="/tools/duct"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Wind className="h-4 w-4 mr-1" />
+            Duct Calculator
+          </NavLink>
+          
+          <NavLink
+            to="/tools/ventilation"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Wind className="h-4 w-4 mr-1" />
+            Ventilation Calculator
+          </NavLink>
+          
+          <NavLink
+            to="/tools/converter"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Scale className="h-4 w-4 mr-1" />
+            Unit Converter
+          </NavLink>
+          
+          <NavLink
+            to="/tools/psychrometric"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Droplet className="h-4 w-4 mr-1" />
+            Psychrometric Calculator
+          </NavLink>
+          
+          <NavLink
+            to="/tools/heat-load"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <BarChart className="h-4 w-4 mr-1" />
+            Heat Load Calculator
+          </NavLink>
+          
+          <NavLink
+            to="/tools/pipe-sizing"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Pipe className="h-4 w-4 mr-1" />
+            Pipe Sizing
+          </NavLink>
+          
+          <NavLink
+            to="/tools/refrigerant-charge"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Gauge className="h-4 w-4 mr-1" />
+            Refrigerant Charge
+          </NavLink>
+          
+          <NavLink
+            to="/tools/air-balance"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Wind className="h-4 w-4 mr-1" />
+            Air Balance
+          </NavLink>
+          
+          <NavLink
+            to="/tools/fan-laws"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Fan className="h-4 w-4 mr-1" />
+            Fan Laws
+          </NavLink>
+          
+          <NavLink
+            to="/tools/energy"
+            className={({ isActive }) =>
+              `px-4 py-2 rounded-full text-sm font-medium flex items-center whitespace-nowrap ${
+                isActive
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+              }`
+            }
+          >
+            <Zap className="h-4 w-4 mr-1" />
+            Energy Efficiency
+          </NavLink>
+        </div>
+        
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          <Outlet />
         </div>
       </div>
-
-      <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-        <Outlet />
-      </main>
     </div>
   );
 }
