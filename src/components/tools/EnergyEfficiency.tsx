@@ -1,295 +1,278 @@
 
-import React, { useState } from 'react';
-import { Zap } from 'lucide-react';
-
-interface EnergyData {
-  systemType: string;
-  coolingCapacity: number;
-  heatingCapacity: number;
-  coolingPower: number;
-  heatingPower: number;
-  annualCoolingHours: number;
-  annualHeatingHours: number;
-  electricityRate: number;
-  coolingEER: number | null;
-  heatingCOP: number | null;
-  annualEnergyCost: number | null;
-}
+import { useState } from 'react';
+import { Zap, Calculator } from 'lucide-react';
 
 export default function EnergyEfficiency() {
-  const [data, setData] = useState<EnergyData>({
-    systemType: 'split',
-    coolingCapacity: 5,   // kW
-    heatingCapacity: 5.5, // kW
-    coolingPower: 1.5,    // kW
-    heatingPower: 1.6,    // kW
-    annualCoolingHours: 1000,
-    annualHeatingHours: 1500,
-    electricityRate: 0.20, // £/kWh
-    coolingEER: null,
-    heatingCOP: null,
-    annualEnergyCost: null
+  const [formData, setFormData] = useState({
+    systemType: 'cooling',
+    capacity: 5,
+    currentEER: 10,
+    newEER: 16,
+    hoursPerDay: 8,
+    daysPerYear: 250,
+    electricityRate: 0.15,
   });
 
-  const calculateEfficiency = () => {
-    // EER = Cooling Capacity (kW) / Power Input (kW)
-    const eer = data.coolingCapacity / data.coolingPower;
-    
-    // COP = Heating Capacity (kW) / Power Input (kW)
-    const cop = data.heatingCapacity / data.heatingPower;
-    
-    // Annual energy consumption
-    const annualCoolingEnergy = data.coolingPower * data.annualCoolingHours;
-    const annualHeatingEnergy = data.heatingPower * data.annualHeatingHours;
-    const totalAnnualEnergy = annualCoolingEnergy + annualHeatingEnergy;
-    
-    // Annual energy cost
-    const annualCost = totalAnnualEnergy * data.electricityRate;
-    
-    setData({
-      ...data,
-      coolingEER: parseFloat(eer.toFixed(2)),
-      heatingCOP: parseFloat(cop.toFixed(2)),
-      annualEnergyCost: parseFloat(annualCost.toFixed(2))
+  const [results, setResults] = useState({
+    currentAnnualCost: 0,
+    newAnnualCost: 0,
+    annualSavings: 0,
+    savingsPercentage: 0,
+    co2Reduction: 0,
+  });
+
+  const [showResults, setShowResults] = useState(false);
+
+  const handleInputChange = (field: string, value: string | number) => {
+    setFormData({
+      ...formData,
+      [field]: value,
     });
+    setShowResults(false);
   };
 
-  const getEfficiencyRating = (value: number | null, type: 'eer' | 'cop') => {
-    if (value === null) return { rating: '', color: '' };
-    
-    if (type === 'eer') {
-      if (value >= 4.1) return { rating: 'A+++', color: 'bg-green-500' };
-      if (value >= 3.6) return { rating: 'A++', color: 'bg-green-400' };
-      if (value >= 3.1) return { rating: 'A+', color: 'bg-green-300' };
-      if (value >= 2.6) return { rating: 'A', color: 'bg-green-200' };
-      if (value >= 2.1) return { rating: 'B', color: 'bg-yellow-200' };
-      if (value >= 1.8) return { rating: 'C', color: 'bg-yellow-300' };
-      return { rating: 'D', color: 'bg-red-300' };
+  const calculateEfficiency = () => {
+    // For cooling: kW = (Capacity in tons × 12,000) ÷ (EER × 1000)
+    // For heating: kW = (Capacity in kBtu/h) ÷ (HSPF)
+
+    let currentPowerConsumption = 0;
+    let newPowerConsumption = 0;
+
+    if (formData.systemType === 'cooling') {
+      // Convert tons to kW based on EER
+      currentPowerConsumption = (formData.capacity * 12000) / (formData.currentEER * 1000);
+      newPowerConsumption = (formData.capacity * 12000) / (formData.newEER * 1000);
     } else {
-      if (value >= 4.6) return { rating: 'A+++', color: 'bg-green-500' };
-      if (value >= 4.0) return { rating: 'A++', color: 'bg-green-400' };
-      if (value >= 3.4) return { rating: 'A+', color: 'bg-green-300' };
-      if (value >= 2.8) return { rating: 'A', color: 'bg-green-200' };
-      if (value >= 2.2) return { rating: 'B', color: 'bg-yellow-200' };
-      if (value >= 1.8) return { rating: 'C', color: 'bg-yellow-300' };
-      return { rating: 'D', color: 'bg-red-300' };
+      // Assume HSPF for heating (simplified)
+      currentPowerConsumption = (formData.capacity * 3.412) / formData.currentEER;
+      newPowerConsumption = (formData.capacity * 3.412) / formData.newEER;
     }
+
+    // Calculate annual energy consumption in kWh
+    const currentAnnualEnergy = currentPowerConsumption * formData.hoursPerDay * formData.daysPerYear;
+    const newAnnualEnergy = newPowerConsumption * formData.hoursPerDay * formData.daysPerYear;
+
+    // Calculate annual cost
+    const currentAnnualCost = currentAnnualEnergy * formData.electricityRate;
+    const newAnnualCost = newAnnualEnergy * formData.electricityRate;
+
+    // Calculate savings
+    const annualSavings = currentAnnualCost - newAnnualCost;
+    const savingsPercentage = (annualSavings / currentAnnualCost) * 100;
+
+    // Calculate CO2 reduction (average 0.85 lbs CO2 per kWh)
+    const energySaved = currentAnnualEnergy - newAnnualEnergy;
+    const co2Reduction = energySaved * 0.85 / 2.205; // Convert to kg
+
+    setResults({
+      currentAnnualCost,
+      newAnnualCost,
+      annualSavings,
+      savingsPercentage,
+      co2Reduction,
+    });
+
+    setShowResults(true);
   };
-  
-  const eerRating = getEfficiencyRating(data.coolingEER, 'eer');
-  const copRating = getEfficiencyRating(data.heatingCOP, 'cop');
 
   return (
     <div className="p-6">
       <div className="flex items-center mb-6">
         <Zap className="h-6 w-6 text-blue-500 mr-2" />
-        <h1 className="text-2xl font-bold">Energy Efficiency Calculator</h1>
+        <h2 className="text-2xl font-bold">Energy Efficiency Calculator</h2>
       </div>
       
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="mb-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">System Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <p className="text-gray-600 mb-6">
+        Calculate potential energy savings and return on investment when upgrading to more efficient HVAC equipment.
+      </p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-medium mb-4">System Information</h3>
+          
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 System Type
               </label>
               <select
-                value={data.systemType}
-                onChange={(e) => setData({...data, systemType: e.target.value})}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={formData.systemType}
+                onChange={(e) => handleInputChange('systemType', e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                <option value="split">Split System</option>
-                <option value="vrf">VRF/VRV System</option>
-                <option value="rooftop">Rooftop Unit</option>
-                <option value="chiller">Chiller System</option>
+                <option value="cooling">Cooling System</option>
+                <option value="heating">Heating System</option>
               </select>
             </div>
             
-            <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cooling Capacity (kW)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={data.coolingCapacity || ''}
-                  onChange={(e) => setData({...data, coolingCapacity: parseFloat(e.target.value) || 0})}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Cooling Power Input (kW)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={data.coolingPower || ''}
-                  onChange={(e) => setData({...data, coolingPower: parseFloat(e.target.value) || 0})}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Heating Capacity (kW)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={data.heatingCapacity || ''}
-                  onChange={(e) => setData({...data, heatingCapacity: parseFloat(e.target.value) || 0})}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Heating Power Input (kW)
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={data.heatingPower || ''}
-                  onChange={(e) => setData({...data, heatingPower: parseFloat(e.target.value) || 0})}
-                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {formData.systemType === 'cooling' ? 'Capacity (Tons)' : 'Capacity (kBtu/h)'}
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.capacity}
+                onChange={(e) => handleInputChange('capacity', parseFloat(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {formData.systemType === 'cooling' ? 'Current EER' : 'Current HSPF'}
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.currentEER}
+                onChange={(e) => handleInputChange('currentEER', parseFloat(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {formData.systemType === 'cooling' ? 'New EER' : 'New HSPF'}
+              </label>
+              <input
+                type="number"
+                step="0.1"
+                value={formData.newEER}
+                onChange={(e) => handleInputChange('newEER', parseFloat(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
             </div>
           </div>
         </div>
         
-        <div className="mb-6 border-t border-gray-200 pt-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Usage & Cost</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white p-4 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-medium mb-4">Usage & Costs</h3>
+          
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Annual Cooling Hours
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Operating Hours Per Day
               </label>
               <input
                 type="number"
-                value={data.annualCoolingHours || ''}
-                onChange={(e) => setData({...data, annualCoolingHours: parseInt(e.target.value) || 0})}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={formData.hoursPerDay}
+                onChange={(e) => handleInputChange('hoursPerDay', parseInt(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Annual Heating Hours
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Operating Days Per Year
               </label>
               <input
                 type="number"
-                value={data.annualHeatingHours || ''}
-                onChange={(e) => setData({...data, annualHeatingHours: parseInt(e.target.value) || 0})}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={formData.daysPerYear}
+                onChange={(e) => handleInputChange('daysPerYear', parseInt(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Electricity Rate (£/kWh)
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Electricity Rate ($/kWh)
               </label>
               <input
                 type="number"
                 step="0.01"
-                value={data.electricityRate || ''}
-                onChange={(e) => setData({...data, electricityRate: parseFloat(e.target.value) || 0})}
-                className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={formData.electricityRate}
+                onChange={(e) => handleInputChange('electricityRate', parseFloat(e.target.value) || 0)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
               />
             </div>
+            
+            <div className="pt-4">
+              <button
+                onClick={calculateEfficiency}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center justify-center"
+              >
+                <Calculator className="h-4 w-4 mr-2" />
+                Calculate Savings
+              </button>
+            </div>
           </div>
         </div>
-        
-        <div className="mb-6">
-          <button
-            onClick={calculateEfficiency}
-            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Calculate Efficiency
-          </button>
-        </div>
-        
-        {data.coolingEER !== null && data.heatingCOP !== null && (
-          <div className="border-t border-gray-200 pt-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Efficiency Results</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-blue-50 rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-md font-medium text-gray-900">Cooling Efficiency (EER)</h3>
-                    <p className="text-3xl font-bold text-blue-600">{data.coolingEER}</p>
-                    <p className="text-sm text-gray-500 mt-1">Energy Efficiency Ratio</p>
-                  </div>
-                  <div className={`text-center ${eerRating.color} text-white rounded-full w-12 h-12 flex items-center justify-center`}>
-                    <span className="font-bold text-sm">{eerRating.rating}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="bg-red-50 rounded-lg p-4">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h3 className="text-md font-medium text-gray-900">Heating Efficiency (COP)</h3>
-                    <p className="text-3xl font-bold text-red-600">{data.heatingCOP}</p>
-                    <p className="text-sm text-gray-500 mt-1">Coefficient of Performance</p>
-                  </div>
-                  <div className={`text-center ${copRating.color} text-white rounded-full w-12 h-12 flex items-center justify-center`}>
-                    <span className="font-bold text-sm">{copRating.rating}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="md:col-span-2 bg-gray-50 rounded-lg p-4">
-                <h3 className="text-md font-medium text-gray-900 mb-2">Annual Energy Cost</h3>
-                <p className="text-3xl font-bold text-gray-900">£{data.annualEnergyCost}</p>
-                <div className="mt-2 grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-500">Annual Cooling Energy:</p>
-                    <p className="font-medium">{data.coolingPower * data.annualCoolingHours} kWh</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500">Annual Heating Energy:</p>
-                    <p className="font-medium">{data.heatingPower * data.annualHeatingHours} kWh</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6">
-              <h3 className="text-md font-medium text-gray-900 mb-2">Seasonal Efficiency</h3>
-              <p className="text-sm text-gray-600 mb-4">
-                The values above reflect nominal efficiency. For a more accurate assessment, consider seasonal efficiency metrics (SEER for cooling and SCOP for heating) which account for variable operating conditions throughout the year.
+      </div>
+      
+      {showResults && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
+          <h3 className="text-lg font-medium text-green-800 mb-4">Energy Savings Results</h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white p-4 rounded-lg border border-green-100">
+              <h4 className="font-medium text-gray-700 mb-2">Annual Savings</h4>
+              <p className="text-2xl font-bold text-green-600">${results.annualSavings.toFixed(2)}</p>
+              <p className="text-sm text-gray-500 mt-1">
+                {results.savingsPercentage.toFixed(1)}% reduction in energy costs
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="border border-gray-200 rounded-md p-3">
-                  <h4 className="font-medium">Improving System Efficiency:</h4>
-                  <ul className="list-disc list-inside mt-1 text-gray-600 space-y-1">
-                    <li>Regular maintenance and filter cleaning</li>
-                    <li>Optimal temperature setpoints (24-26°C cooling, 19-21°C heating)</li>
-                    <li>Night setback and scheduling</li>
-                    <li>Proper insulation of ductwork and pipework</li>
-                  </ul>
-                </div>
-                
-                <div className="border border-gray-200 rounded-md p-3">
-                  <h4 className="font-medium">Efficiency Rating Scales:</h4>
-                  <ul className="list-disc list-inside mt-1 text-gray-600 space-y-1">
-                    <li>A+++ to D (highest to lowest efficiency)</li>
-                    <li>Higher EER/COP values indicate better efficiency</li>
-                    <li>UK minimum standards require at least class C</li>
-                    <li>Modern high-efficiency systems typically achieve A+ or better</li>
-                  </ul>
-                </div>
-              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border border-green-100">
+              <h4 className="font-medium text-gray-700 mb-2">Current vs New Cost</h4>
+              <p className="text-lg font-medium text-red-500">${results.currentAnnualCost.toFixed(2)}/year</p>
+              <p className="text-lg font-medium text-green-500">${results.newAnnualCost.toFixed(2)}/year</p>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border border-green-100">
+              <h4 className="font-medium text-gray-700 mb-2">Environmental Impact</h4>
+              <p className="text-lg font-medium text-green-600">{results.co2Reduction.toFixed(2)} kg CO2</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Estimated annual reduction
+              </p>
             </div>
           </div>
-        )}
+        </div>
+      )}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-6">
+        <div>
+          <h3 className="font-medium text-gray-700 mb-3">Typical Efficiency Ratings</h3>
+          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">System Type</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Standard</th>
+                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">High-Efficiency</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-gray-200">
+                <td className="px-4 py-2 text-sm">Air Conditioners (EER)</td>
+                <td className="px-4 py-2 text-sm">8-11</td>
+                <td className="px-4 py-2 text-sm">12-16+</td>
+              </tr>
+              <tr className="border-t border-gray-200">
+                <td className="px-4 py-2 text-sm">Heat Pumps (HSPF)</td>
+                <td className="px-4 py-2 text-sm">7-8.5</td>
+                <td className="px-4 py-2 text-sm">9-10+</td>
+              </tr>
+              <tr className="border-t border-gray-200">
+                <td className="px-4 py-2 text-sm">Furnaces (AFUE)</td>
+                <td className="px-4 py-2 text-sm">80-83%</td>
+                <td className="px-4 py-2 text-sm">90-98%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <div>
+          <h3 className="font-medium text-gray-700 mb-3">Energy-Saving Tips</h3>
+          <ul className="list-disc list-inside space-y-1 text-gray-600">
+            <li>Regular maintenance of equipment</li>
+            <li>Clean or replace air filters monthly</li>
+            <li>Seal ductwork to prevent leakage</li>
+            <li>Install programmable thermostats</li>
+            <li>Use economizers when appropriate</li>
+            <li>Consider variable speed drives</li>
+            <li>Implement proper building insulation</li>
+          </ul>
+        </div>
       </div>
     </div>
   );

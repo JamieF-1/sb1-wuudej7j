@@ -1,180 +1,63 @@
 import React from 'react';
-import RefrigerantComparator from './RefrigerantComparator';
-import DuctCalculator from './DuctCalculator';
-import VentilationCalculator from './VentilationCalculator';
-import UnitConverter from './UnitConverter';
-import PsychrometricCalculator from './PsychrometricCalculator';
-import HeatLoadCalculator from './HeatLoadCalculator';
-import PipeSizing from './PipeSizing';
-import RefrigerantCharge from './RefrigerantCharge';
-import AirBalance from './AirBalance';
-import FanLaws from './FanLaws';
-import EnergyEfficiency from './EnergyEfficiency';
+import { Link } from 'react-router-dom';
+import { Wind, Thermometer, Fan, Zap, Ruler } from 'lucide-react';
 
-export function RefrigerantComparator() {
+export function ToolCard({ title, description, icon, to }: { title: string; description: string; icon: React.ReactNode; to: string }) {
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Refrigerant Comparator</h2>
-      <p className="text-gray-600 mb-4">
-        Compare different refrigerants based on their properties, efficiency, and environmental impact.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
+    <Link to={to} className="bg-white shadow hover:shadow-md transition-shadow rounded-lg overflow-hidden flex flex-col">
+      <div className="p-6">
+        <div className="flex items-center mb-3">
+          <div className="text-blue-500 mr-3">{icon}</div>
+          <h3 className="text-xl font-semibold">{title}</h3>
+        </div>
+        <p className="text-gray-600">{description}</p>
+      </div>
+      <div className="mt-auto p-4 bg-gray-50 border-t border-gray-100 text-blue-600 text-sm font-medium">
+        Open Tool →
+      </div>
+    </Link>
+  );
+}
+
+export function ToolsGrid() {
+  return (
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-6">HVAC Tools</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ToolCard
+          title="Pipe Sizing"
+          description="Calculate optimal pipe sizes based on flow rate and pressure drop requirements."
+          icon={<Ruler className="h-5 w-5" />}
+          to="/tools/pipe-sizing"
+        />
+        <ToolCard
+          title="Refrigerant Charge"
+          description="Calculate refrigerant charge quantities for different system types and sizes."
+          icon={<Thermometer className="h-5 w-5" />}
+          to="/tools/refrigerant-charge"
+        />
+        <ToolCard
+          title="Air Balance"
+          description="Calculate and balance airflow in HVAC systems across multiple outlets."
+          icon={<Wind className="h-5 w-5" />}
+          to="/tools/air-balance"
+        />
+        <ToolCard
+          title="Fan Laws"
+          description="Calculate fan performance changes when speed, diameter, or air density changes."
+          icon={<Fan className="h-5 w-5" />}
+          to="/tools/fan-laws"
+        />
+        <ToolCard
+          title="Energy Efficiency"
+          description="Calculate energy savings when upgrading to more efficient equipment."
+          icon={<Zap className="h-5 w-5" />}
+          to="/tools/energy"
+        />
+        {/* Add more ToolCards here as needed */}
       </div>
     </div>
   );
 }
 
-export function DuctCalculator() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Duct Calculator</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate duct sizes, friction loss, and air velocity for HVAC systems.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function VentilationCalculator() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Ventilation Calculator</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate required ventilation rates based on room size, occupancy, and usage.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function UnitConverter() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Unit Converter</h2>
-      <p className="text-gray-600 mb-4">
-        Convert between different units of measurement for HVAC applications.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function PsychrometricCalculator() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Psychrometric Calculator</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate air properties including humidity, enthalpy, and dew point.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function HeatLoadCalculator() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Heat Load Calculator</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate heating and cooling loads for buildings and spaces.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function PipeSizing() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Pipe Sizing</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate pipe sizes and pressure drops for refrigerant and water systems.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function RefrigerantCharge() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Refrigerant Charge</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate refrigerant charge quantities for different system types and sizes.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function AirBalance() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Air Balance</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate and balance airflow in HVAC systems across multiple outlets.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function FanLaws() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Fan Laws</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate fan performance changes when speed, diameter, or air density changes.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export function EnergyEfficiency() {
-  return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">Energy Efficiency</h2>
-      <p className="text-gray-600 mb-4">
-        Calculate energy usage and efficiency metrics for HVAC systems.
-      </p>
-      <div className="border-t pt-4 mt-6">
-        <p className="italic text-sm text-gray-500">Tool implementation in progress...</p>
-      </div>
-    </div>
-  );
-}
-
-export {
-  RefrigerantComparator,
-  DuctCalculator,
-  VentilationCalculator,
-  UnitConverter,
-  PsychrometricCalculator,
-  HeatLoadCalculator,
-  PipeSizing,
-  RefrigerantCharge,
-  AirBalance,
-  FanLaws,
-  EnergyEfficiency
-};
+export { ToolsGrid, ToolCard };
