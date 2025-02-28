@@ -1,130 +1,79 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Pipette,
-  Thermometer,
-  Fan,
-  Scale,
-  Wind,
-  Zap,
-  Waves,
-  ArrowRightLeft,
-  Calculator,
-  BarChart3
+import { 
+  Gauge, 
+  Thermometer, 
+  Wind, 
+  Fan, 
+  Zap 
 } from "lucide-react";
 
-// Replace tools data with correct icon - Pipe -> Pipette
-const tools = [
-  {
-    name: "Pipe Sizing",
-    description: "Calculate optimal pipe dimensions for HVAC systems",
-    icon: <Pipette className="h-8 w-8 text-blue-500" />,
-    path: "/tools/pipe-sizing",
-    color: "bg-blue-50 border-blue-200"
-  },
-  {
-    name: "Refrigerant Charge",
-    description: "Calculate refrigerant charge requirements",
-    icon: <Thermometer className="h-8 w-8 text-blue-500" />,
-    path: "/tools/refrigerant-charge",
-    color: "bg-blue-50 border-blue-200"
-  },
-  {
-    name: "Air Balance",
-    description: "Balance airflow in HVAC distribution systems",
-    icon: <Wind className="h-8 w-8 text-green-500" />,
-    path: "/tools/air-balance",
-    color: "bg-green-50 border-green-200"
-  },
-  {
-    name: "Fan Laws",
-    description: "Calculate changes in fan performance",
-    icon: <Fan className="h-8 w-8 text-green-500" />,
-    path: "/tools/fan-laws",
-    color: "bg-green-50 border-green-200"
-  },
-  {
-    name: "Energy Efficiency",
-    description: "Evaluate system efficiency and savings",
-    icon: <Zap className="h-8 w-8 text-yellow-500" />,
-    path: "/tools/energy",
-    color: "bg-yellow-50 border-yellow-200"
-  },
-  {
-    name: "Duct Sizing",
-    description: "Size ducts based on airflow requirements",
-    icon: <Scale className="h-8 w-8 text-purple-500" />,
-    path: "/tools/duct-sizing",
-    color: "bg-purple-50 border-purple-200",
-    comingSoon: true,
-  },
-  {
-    name: "Cooling Load",
-    description: "Calculate cooling loads for spaces",
-    icon: <Waves className="h-8 w-8 text-purple-500" />,
-    path: "/tools/cooling-load",
-    color: "bg-purple-50 border-purple-200",
-    comingSoon: true,
-  },
-  {
-    name: "Pressure Conversion",
-    description: "Convert between pressure units",
-    icon: <ArrowRightLeft className="h-8 w-8 text-red-500" />,
-    path: "/tools/pressure-conversion",
-    color: "bg-red-50 border-red-200",
-    comingSoon: true,
-  },
-  {
-    name: "Refrigerant Properties",
-    description: "View refrigerant data and characteristics",
-    icon: <BarChart3 className="h-8 w-8 text-red-500" />,
-    path: "/tools/refrigerant-properties",
-    color: "bg-red-50 border-red-200",
-    comingSoon: true,
-  },
-  {
-    name: "Psychrometrics",
-    description: "Calculate air properties and conditions",
-    icon: <Calculator className="h-8 w-8 text-indigo-500" />,
-    path: "/tools/psychrometrics",
-    color: "bg-indigo-50 border-indigo-200",
-    comingSoon: true,
-  },
-];
-
-export function ToolsGrid() {
+export const ToolsGrid: React.FC = () => {
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">HVAC Technical Tools</h2>
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {tools.map((tool) => (
-          <div
-            key={tool.name}
-            className={`border rounded-lg p-4 ${tool.color} relative`}
-          >
-            {tool.comingSoon && (
-              <div className="absolute top-2 right-2 bg-gray-600 text-white text-xs px-2 py-1 rounded">
-                Coming Soon
-              </div>
-            )}
-            <div className="mb-3">{tool.icon}</div>
-            <h3 className="font-semibold text-lg mb-1">{tool.name}</h3>
-            <p className="text-gray-600 text-sm mb-3">{tool.description}</p>
-            {!tool.comingSoon ? (
-              <Link
-                to={tool.path}
-                className="text-sm font-medium text-blue-600 hover:text-blue-800"
-              >
-                Open Tool &rarr;
-              </Link>
-            ) : (
-              <span className="text-sm font-medium text-gray-400">
-                Open Tool &rarr;
-              </span>
-            )}
-          </div>
-        ))}
+      <h2 className="text-2xl font-bold mb-6">HVAC Engineering Tools</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ToolCard 
+          title="Pipe Sizing" 
+          description="Calculate optimal pipe sizes based on flow rate and pressure drop requirements for hydronic systems."
+          icon={<Gauge className="h-8 w-8 text-blue-500" />}
+          link="/tools/pipe-sizing"
+        />
+
+        <ToolCard 
+          title="Refrigerant Charge" 
+          description="Calculate proper refrigerant charge for different system types and track F-Gas compliance."
+          icon={<Thermometer className="h-8 w-8 text-red-500" />}
+          link="/tools/refrigerant-charge"
+        />
+
+        <ToolCard 
+          title="Air Balance" 
+          description="Calculate airflow requirements and balance air distribution systems according to design specifications."
+          icon={<Wind className="h-8 w-8 text-green-500" />}
+          link="/tools/air-balance"
+        />
+
+        <ToolCard 
+          title="Fan Laws" 
+          description="Apply fan laws to predict performance changes when adjusting speed, diameter or air density."
+          icon={<Fan className="h-8 w-8 text-purple-500" />}
+          link="/tools/fan-laws"
+        />
+
+        <ToolCard 
+          title="Energy Efficiency" 
+          description="Calculate energy usage, efficiency ratios and estimate potential savings for HVAC systems."
+          icon={<Zap className="h-8 w-8 text-yellow-500" />}
+          link="/tools/energy"
+        />
       </div>
     </div>
   );
+};
+
+interface ToolCardProps {
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  link: string;
 }
+
+export const ToolCard: React.FC<ToolCardProps> = ({ title, description, icon, link }) => {
+  return (
+    <Link to={link} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow p-6 flex flex-col">
+      <div className="mb-3">{icon}</div>
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      <p className="text-gray-600 text-sm flex-grow">{description}</p>
+      <div className="mt-4">
+        <span className="text-blue-600 text-sm font-medium inline-flex items-center">
+          Use Tool
+          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      </div>
+    </Link>
+  );
+};
