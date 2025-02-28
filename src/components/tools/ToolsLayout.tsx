@@ -6,6 +6,14 @@ import {
   BarChart, ThermometerSun 
 } from 'lucide-react';
 
+import React from 'react';
+import { Link, useLocation, Outlet } from 'react-router-dom';
+import { 
+  Home, Thermometer, Calculator, Wind, ArrowLeftRight, 
+  Droplets, ThermometerSun, Gauge, Scale, BarChart, 
+  Fan, Zap 
+} from 'lucide-react';
+
 const tools = [
   {
     name: 'Refrigerant Comparator',

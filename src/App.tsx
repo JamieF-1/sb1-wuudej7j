@@ -8,6 +8,20 @@ import VRFCommissioningForm from './components/VRFCommissioningForm';
 import BreakdownForm from './components/BreakdownForm';
 import Dashboard from './components/Dashboard';
 import History from './components/History';
+import ToolsLayout from './components/tools/ToolsLayout';
+import {
+  RefrigerantComparator,
+  DuctCalculator,
+  VentilationCalculator,
+  UnitConverter,
+  PsychrometricCalculator,
+  HeatLoadCalculator,
+  PipeSizing,
+  RefrigerantCharge,
+  AirBalance,
+  FanLaws,
+  EnergyEfficiency
+} from './components/tools/ToolsComponents';
 
 function App() {
   return (
@@ -79,6 +93,27 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/tools"
+            element={
+              <ProtectedRoute>
+                <ToolsLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<Navigate to="/tools/refrigerant" replace />} />
+            <Route path="refrigerant" element={<RefrigerantComparator />} />
+            <Route path="duct" element={<DuctCalculator />} />
+            <Route path="ventilation" element={<VentilationCalculator />} />
+            <Route path="converter" element={<UnitConverter />} />
+            <Route path="psychrometric" element={<PsychrometricCalculator />} />
+            <Route path="heat-load" element={<HeatLoadCalculator />} />
+            <Route path="pipe-sizing" element={<PipeSizing />} />
+            <Route path="refrigerant-charge" element={<RefrigerantCharge />} />
+            <Route path="air-balance" element={<AirBalance />} />
+            <Route path="fan-laws" element={<FanLaws />} />
+            <Route path="energy" element={<EnergyEfficiency />} />
+          </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>

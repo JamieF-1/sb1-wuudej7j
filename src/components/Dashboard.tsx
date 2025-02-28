@@ -221,3 +221,80 @@ export default function Dashboard() {
     </div>
   );
 }
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Wrench, Clipboard, BarChart, FileText } from 'lucide-react';
+
+function Dashboard() {
+  return (
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Forms Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Clipboard className="h-6 w-6 text-gray-500" />
+                  </div>
+                  <div className="ml-5">
+                    <h3 className="text-lg font-medium text-gray-900">Forms</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-5 py-3">
+                <div className="space-y-2">
+                  <Link to="/fgas-form" className="text-sm text-blue-600 hover:text-blue-800 block">F-Gas Log Sheet</Link>
+                  <Link to="/vrf-commissioning" className="text-sm text-blue-600 hover:text-blue-800 block">VRF Commissioning</Link>
+                  <Link to="/breakdown-form" className="text-sm text-blue-600 hover:text-blue-800 block">Breakdown Report</Link>
+                </div>
+              </div>
+            </div>
+
+            {/* History Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <FileText className="h-6 w-6 text-gray-500" />
+                  </div>
+                  <div className="ml-5">
+                    <h3 className="text-lg font-medium text-gray-900">History</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-5 py-3">
+                <Link to="/history" className="text-sm text-blue-600 hover:text-blue-800 block">View submitted forms</Link>
+              </div>
+            </div>
+
+            {/* Tools Card */}
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="p-5">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <Wrench className="h-6 w-6 text-gray-500" />
+                  </div>
+                  <div className="ml-5">
+                    <h3 className="text-lg font-medium text-gray-900">HVAC Tools</h3>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-gray-50 px-5 py-3">
+                <Link to="/tools" className="text-sm text-blue-600 hover:text-blue-800 block">Access calculation tools</Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+export default Dashboard;
