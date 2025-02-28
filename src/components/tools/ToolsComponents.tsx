@@ -1,79 +1,67 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { 
-  Gauge, 
-  Thermometer, 
-  Wind, 
-  Fan, 
-  Zap 
-} from "lucide-react";
+import React from 'react';
+import { Link } from 'react-router-dom';
+import { Fan, Thermometer, Wind, Gauge, BarChart3 } from 'lucide-react';
 
-export const ToolsGrid: React.FC = () => {
+// Tool card component for the tools grid
+export const ToolCard = ({ icon, title, description, link }) => {
   return (
-    <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-2xl font-bold mb-6">HVAC Engineering Tools</h2>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <ToolCard 
-          title="Pipe Sizing" 
-          description="Calculate optimal pipe sizes based on flow rate and pressure drop requirements for hydronic systems."
-          icon={<Gauge className="h-8 w-8 text-blue-500" />}
-          link="/tools/pipe-sizing"
-        />
-
-        <ToolCard 
-          title="Refrigerant Charge" 
-          description="Calculate proper refrigerant charge for different system types and track F-Gas compliance."
-          icon={<Thermometer className="h-8 w-8 text-red-500" />}
-          link="/tools/refrigerant-charge"
-        />
-
-        <ToolCard 
-          title="Air Balance" 
-          description="Calculate airflow requirements and balance air distribution systems according to design specifications."
-          icon={<Wind className="h-8 w-8 text-green-500" />}
-          link="/tools/air-balance"
-        />
-
-        <ToolCard 
-          title="Fan Laws" 
-          description="Apply fan laws to predict performance changes when adjusting speed, diameter or air density."
-          icon={<Fan className="h-8 w-8 text-purple-500" />}
-          link="/tools/fan-laws"
-        />
-
-        <ToolCard 
-          title="Energy Efficiency" 
-          description="Calculate energy usage, efficiency ratios and estimate potential savings for HVAC systems."
-          icon={<Zap className="h-8 w-8 text-yellow-500" />}
-          link="/tools/energy"
-        />
+    <Link to={link} className="block">
+      <div className="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-5 h-full border border-gray-100">
+        <div className="flex items-center mb-3">
+          <div className="p-2 bg-blue-50 rounded-full mr-3">
+            {icon}
+          </div>
+          <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+        </div>
+        <p className="text-gray-600 text-sm">{description}</p>
       </div>
-    </div>
+    </Link>
   );
 };
 
-interface ToolCardProps {
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  link: string;
-}
+// Tools grid for the main tools page
+export const ToolsGrid = () => {
+  const tools = [
+    {
+      icon: <Gauge className="h-5 w-5 text-blue-600" />,
+      title: "Pipe Sizing",
+      description: "Calculate optimal pipe sizes for various HVAC and plumbing applications.",
+      link: "/tools/pipe-sizing",
+    },
+    {
+      icon: <Thermometer className="h-5 w-5 text-blue-600" />,
+      title: "Refrigerant Charge",
+      description: "Determine proper refrigerant charge for various refrigeration systems.",
+      link: "/tools/refrigerant-charge",
+    },
+    {
+      icon: <Wind className="h-5 w-5 text-blue-600" />,
+      title: "Air Balance",
+      description: "Calculate airflow requirements and balance air distribution systems.",
+      link: "/tools/air-balance",
+    },
+    {
+      icon: <Fan className="h-5 w-5 text-blue-600" />,
+      title: "Fan Laws",
+      description: "Apply fan laws to calculate changes in fan performance.",
+      link: "/tools/fan-laws",
+    },
+    {
+      icon: <BarChart3 className="h-5 w-5 text-blue-600" />,
+      title: "Energy Efficiency",
+      description: "Calculate energy usage and savings for HVAC equipment.",
+      link: "/tools/energy",
+    },
+  ];
 
-export const ToolCard: React.FC<ToolCardProps> = ({ title, description, icon, link }) => {
   return (
-    <Link to={link} className="border border-gray-200 rounded-lg hover:shadow-md transition-shadow p-6 flex flex-col">
-      <div className="mb-3">{icon}</div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-gray-600 text-sm flex-grow">{description}</p>
-      <div className="mt-4">
-        <span className="text-blue-600 text-sm font-medium inline-flex items-center">
-          Use Tool
-          <svg className="w-3 h-3 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </span>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Engineering Tools</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {tools.map((tool, index) => (
+          <ToolCard key={index} {...tool} />
+        ))}
       </div>
-    </Link>
+    </div>
   );
 };
