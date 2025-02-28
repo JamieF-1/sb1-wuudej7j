@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ClipboardCheck, FileSpreadsheet, History, Wrench } from 'lucide-react';
+import { Wrench, Clipboard, BarChart, FileText } from 'lucide-react';
+import { useAuth } from '../components/auth/AuthContext';
+import { supabase } from '../lib/supabaseClient';
 import Header from './layout/Header';
-import { supabase } from '../lib/supabase';
-import { useAuth } from './auth/AuthContext';
 
 interface RecentForm {
   id: string;
@@ -18,7 +18,7 @@ export default function Dashboard() {
   const [recentForms, setRecentForms] = useState<RecentForm[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  
+
   const backgroundImage = React.useMemo(() => {
     const images = [
       'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=2000&q=80',
@@ -80,86 +80,44 @@ export default function Dashboard() {
       }}
     >
       <Header />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 gap-8">
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <Link
-              to="/fgas-form"
-              className="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                    <ClipboardCheck className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">F-Gas Form</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Create a new F-Gas compliance record
-                    </p>
-                  </div>
-                </div>
+      <div className="container mx-auto px-4 py-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {/* Quick Links */}
+          <div className="bg-white/80 backdrop-blur-sm shadow-lg rounded-lg overflow-hidden">
+            <div className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Quick Links</h2>
+              <div className="grid grid-cols-2 gap-4">
+                <Link
+                  to="/fgas-form"
+                  className="flex flex-col items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                >
+                  <Clipboard className="h-8 w-8 text-blue-600 mb-2" />
+                  <span className="text-sm font-medium text-gray-700">New F-Gas Log</span>
+                </Link>
+                <Link
+                  to="/vrf-commissioning"
+                  className="flex flex-col items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+                >
+                  <BarChart className="h-8 w-8 text-green-600 mb-2" />
+                  <span className="text-sm font-medium text-gray-700">VRF Commissioning</span>
+                </Link>
+                <Link
+                  to="/breakdown-form"
+                  className="flex flex-col items-center p-4 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+                >
+                  <Wrench className="h-8 w-8 text-red-600 mb-2" />
+                  <span className="text-sm font-medium text-gray-700">Breakdown Report</span>
+                </Link>
+                <Link
+                  to="/tools"
+                  className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                >
+                  <FileText className="h-8 w-8 text-purple-600 mb-2" />
+                  <span className="text-sm font-medium text-gray-700">Tools & Calculators</span>
+                </Link>
               </div>
-            </Link>
-
-            <Link
-              to="/vrf-commissioning"
-              className="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-emerald-500 rounded-md p-3">
-                    <FileSpreadsheet className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">VRF Commissioning</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Complete a VRF system commissioning sheet
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              to="/breakdown-form"
-              className="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-orange-500 rounded-md p-3">
-                    <Wrench className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Service Visit</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Record a breakdown or service call
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Link>
-
-            <Link
-              to="/history"
-              className="bg-white overflow-hidden shadow-xl rounded-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0 bg-blue-500 rounded-md p-3">
-                    <History className="h-6 w-6 text-white" />
-                  </div>
-                  <div className="ml-4">
-                    <h3 className="text-lg font-semibold text-gray-900">Form History</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      View and manage previous forms
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Link>
+            </div>
           </div>
 
           {/* Recent Forms */}
@@ -185,22 +143,21 @@ export default function Dashboard() {
                       {recentForms.map((form) => (
                         <tr key={form.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm font-medium text-gray-900">
-                              {form.type === 'fgas' ? 'F-Gas Form' : 
-                               form.type === 'vrf' ? 'VRF Commissioning' : 
-                               'Service Visit'}
+                            <span className="text-sm text-gray-900">
+                              {form.type === 'fgas' ? 'F-Gas' : form.type === 'vrf' ? 'VRF' : 'Breakdown'}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className="text-sm text-gray-500">{form.site_name || 'N/A'}</span>
+                            <span className="text-sm text-gray-900">{form.site_name || 'N/A'}</span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              form.status === 'completed' 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {form.status}
+                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                              ${form.status === 'completed' ? 'bg-green-100 text-green-800' : 
+                                form.status === 'in_progress' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-gray-100 text-gray-800'}`}>
+                              {form.status === 'completed' ? 'Completed' : 
+                                form.status === 'in_progress' ? 'In Progress' : 
+                                form.status}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -221,80 +178,3 @@ export default function Dashboard() {
     </div>
   );
 }
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { Wrench, Clipboard, BarChart, FileText } from 'lucide-react';
-
-function Dashboard() {
-  return (
-    <div className="min-h-screen bg-gray-100">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        </div>
-      </header>
-      <main>
-        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {/* Forms Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Clipboard className="h-6 w-6 text-gray-500" />
-                  </div>
-                  <div className="ml-5">
-                    <h3 className="text-lg font-medium text-gray-900">Forms</h3>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <div className="space-y-2">
-                  <Link to="/fgas-form" className="text-sm text-blue-600 hover:text-blue-800 block">F-Gas Log Sheet</Link>
-                  <Link to="/vrf-commissioning" className="text-sm text-blue-600 hover:text-blue-800 block">VRF Commissioning</Link>
-                  <Link to="/breakdown-form" className="text-sm text-blue-600 hover:text-blue-800 block">Breakdown Report</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* History Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <FileText className="h-6 w-6 text-gray-500" />
-                  </div>
-                  <div className="ml-5">
-                    <h3 className="text-lg font-medium text-gray-900">History</h3>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <Link to="/history" className="text-sm text-blue-600 hover:text-blue-800 block">View submitted forms</Link>
-              </div>
-            </div>
-
-            {/* Tools Card */}
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="p-5">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Wrench className="h-6 w-6 text-gray-500" />
-                  </div>
-                  <div className="ml-5">
-                    <h3 className="text-lg font-medium text-gray-900">HVAC Tools</h3>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-gray-50 px-5 py-3">
-                <Link to="/tools" className="text-sm text-blue-600 hover:text-blue-800 block">Access calculation tools</Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-}
-
-export default Dashboard;
