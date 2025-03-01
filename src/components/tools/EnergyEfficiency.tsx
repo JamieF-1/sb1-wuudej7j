@@ -1,277 +1,225 @@
 
-import { useState } from 'react';
-import { Zap, Calculator } from 'lucide-react';
+import React, { useState } from 'react';
 
 export default function EnergyEfficiency() {
-  const [formData, setFormData] = useState({
-    systemType: 'cooling',
-    capacity: 5,
-    currentEER: 10,
-    newEER: 16,
-    hoursPerDay: 8,
-    daysPerYear: 250,
-    electricityRate: 0.15,
-  });
-
-  const [results, setResults] = useState({
-    currentAnnualCost: 0,
-    newAnnualCost: 0,
-    annualSavings: 0,
-    savingsPercentage: 0,
-    co2Reduction: 0,
-  });
-
-  const [showResults, setShowResults] = useState(false);
-
-  const handleInputChange = (field: string, value: string | number) => {
-    setFormData({
-      ...formData,
-      [field]: value,
-    });
-    setShowResults(false);
-  };
+  const [equipmentType, setEquipmentType] = useState('hvac');
+  const [currentEfficiency, setCurrentEfficiency] = useState('');
+  const [proposedEfficiency, setProposedEfficiency] = useState('');
+  const [operatingHours, setOperatingHours] = useState('');
+  const [energyRate, setEnergyRate] = useState('');
+  const [capacity, setCapacity] = useState('');
+  
+  const [annualSavings, setAnnualSavings] = useState<string | null>(null);
+  const [paybackPeriod, setPaybackPeriod] = useState<string | null>(null);
+  const [co2Reduction, setCo2Reduction] = useState<string | null>(null);
 
   const calculateEfficiency = () => {
-    // For cooling: kW = (Capacity in tons × 12,000) ÷ (EER × 1000)
-    // For heating: kW = (Capacity in kBtu/h) ÷ (HSPF)
-
-    let currentPowerConsumption = 0;
-    let newPowerConsumption = 0;
-
-    if (formData.systemType === 'cooling') {
-      // Convert tons to kW based on EER
-      currentPowerConsumption = (formData.capacity * 12000) / (formData.currentEER * 1000);
-      newPowerConsumption = (formData.capacity * 12000) / (formData.newEER * 1000);
-    } else {
-      // Assume HSPF for heating (simplified)
-      currentPowerConsumption = (formData.capacity * 3.412) / formData.currentEER;
-      newPowerConsumption = (formData.capacity * 3.412) / formData.newEER;
+    if (!currentEfficiency || !proposedEfficiency || !operatingHours || !energyRate || !capacity) return;
+    
+    const current = parseFloat(currentEfficiency);
+    const proposed = parseFloat(proposedEfficiency);
+    const hours = parseFloat(operatingHours);
+    const rate = parseFloat(energyRate);
+    const cap = parseFloat(capacity);
+    
+    let currentConsumption = 0;
+    let proposedConsumption = 0;
+    let installationCost = 0;
+    
+    // Different calculation methods based on equipment type
+    if (equipmentType === 'hvac') {
+      // For HVAC, higher efficiency means lower consumption
+      // SEER or COP based calculation (simplified)
+      currentConsumption = (cap * hours) / current;
+      proposedConsumption = (cap * hours) / proposed;
+      installationCost = cap * 500; // Rough estimate: $500 per ton
+    } 
+    else if (equipmentType === 'lighting') {
+      // For lighting, use wattage directly
+      currentConsumption = (cap * current * hours) / 1000; // kWh
+      proposedConsumption = (cap * proposed * hours) / 1000; // kWh
+      installationCost = cap * 25; // Rough estimate: $25 per fixture
     }
-
-    // Calculate annual energy consumption in kWh
-    const currentAnnualEnergy = currentPowerConsumption * formData.hoursPerDay * formData.daysPerYear;
-    const newAnnualEnergy = newPowerConsumption * formData.hoursPerDay * formData.daysPerYear;
-
-    // Calculate annual cost
-    const currentAnnualCost = currentAnnualEnergy * formData.electricityRate;
-    const newAnnualCost = newAnnualEnergy * formData.electricityRate;
-
+    else if (equipmentType === 'motors') {
+      // For motors, use efficiency percentage
+      currentConsumption = (cap * hours * (100 / current)) / 100;
+      proposedConsumption = (cap * hours * (100 / proposed)) / 100;
+      installationCost = cap * 100; // Rough estimate: $100 per HP
+    }
+    
     // Calculate savings
-    const annualSavings = currentAnnualCost - newAnnualCost;
-    const savingsPercentage = (annualSavings / currentAnnualCost) * 100;
-
-    // Calculate CO2 reduction (average 0.85 lbs CO2 per kWh)
-    const energySaved = currentAnnualEnergy - newAnnualEnergy;
-    const co2Reduction = energySaved * 0.85 / 2.205; // Convert to kg
-
-    setResults({
-      currentAnnualCost,
-      newAnnualCost,
-      annualSavings,
-      savingsPercentage,
-      co2Reduction,
-    });
-
-    setShowResults(true);
+    const energySavings = currentConsumption - proposedConsumption;
+    const costSavings = energySavings * rate;
+    const payback = installationCost / costSavings;
+    
+    // CO2 reduction (using average 0.85 lbs CO2 per kWh)
+    const carbonReduction = energySavings * 0.85 / 2000; // tons of CO2
+    
+    setAnnualSavings(costSavings.toFixed(2));
+    setPaybackPeriod(payback.toFixed(2));
+    setCo2Reduction(carbonReduction.toFixed(2));
   };
 
   return (
-    <div className="p-6">
-      <div className="flex items-center mb-6">
-        <Zap className="h-6 w-6 text-blue-500 mr-2" />
-        <h2 className="text-2xl font-bold">Energy Efficiency Calculator</h2>
-      </div>
+    <div className="bg-white shadow rounded-lg p-6">
+      <h2 className="text-2xl font-bold mb-6">Energy Efficiency Calculator</h2>
       
-      <p className="text-gray-600 mb-6">
-        Calculate potential energy savings and return on investment when upgrading to more efficient HVAC equipment.
-      </p>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium mb-4">System Information</h3>
-          
+      <div className="space-y-6">
+        <div className="bg-emerald-50 p-4 rounded-lg">
+          <h3 className="font-medium text-emerald-800 mb-2">About This Tool</h3>
+          <p className="text-emerald-700">
+            Calculate potential energy savings, cost benefits, and environmental impact 
+            of upgrading to more efficient equipment. This tool helps make the business 
+            case for energy efficiency investments.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6">
           <div className="space-y-4">
+            <h3 className="text-lg font-semibold">Equipment Parameters</h3>
+            
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                System Type
-              </label>
-              <select
-                value={formData.systemType}
-                onChange={(e) => handleInputChange('systemType', e.target.value)}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Equipment Type</label>
+              <select 
+                value={equipmentType} 
+                onChange={(e) => setEquipmentType(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2"
               >
-                <option value="cooling">Cooling System</option>
-                <option value="heating">Heating System</option>
+                <option value="hvac">HVAC System</option>
+                <option value="lighting">Lighting</option>
+                <option value="motors">Motors</option>
+                <option value="boilers">Boilers</option>
+                <option value="chillers">Chillers</option>
               </select>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.systemType === 'cooling' ? 'Capacity (Tons)' : 'Capacity (kBtu/h)'}
+                {equipmentType === 'hvac' ? 'Current Efficiency (SEER/COP)' : 
+                 equipmentType === 'lighting' ? 'Current Wattage per Fixture' :
+                 equipmentType === 'motors' ? 'Current Efficiency (%)' :
+                 'Current Efficiency'}
               </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.capacity}
-                onChange={(e) => handleInputChange('capacity', parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              <input 
+                type="number" 
+                value={currentEfficiency} 
+                onChange={(e) => setCurrentEfficiency(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                placeholder={`Enter current ${equipmentType === 'lighting' ? 'wattage' : 'efficiency'}`}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.systemType === 'cooling' ? 'Current EER' : 'Current HSPF'}
+                {equipmentType === 'hvac' ? 'Proposed Efficiency (SEER/COP)' : 
+                 equipmentType === 'lighting' ? 'Proposed Wattage per Fixture' :
+                 equipmentType === 'motors' ? 'Proposed Efficiency (%)' :
+                 'Proposed Efficiency'}
               </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.currentEER}
-                onChange={(e) => handleInputChange('currentEER', parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              <input 
+                type="number" 
+                value={proposedEfficiency} 
+                onChange={(e) => setProposedEfficiency(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                placeholder={`Enter proposed ${equipmentType === 'lighting' ? 'wattage' : 'efficiency'}`}
               />
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                {formData.systemType === 'cooling' ? 'New EER' : 'New HSPF'}
+                {equipmentType === 'hvac' ? 'System Capacity (Tons)' : 
+                 equipmentType === 'lighting' ? 'Number of Fixtures' :
+                 equipmentType === 'motors' ? 'Motor Size (HP)' :
+                 'System Capacity'}
               </label>
-              <input
-                type="number"
-                step="0.1"
-                value={formData.newEER}
-                onChange={(e) => handleInputChange('newEER', parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              <input 
+                type="number" 
+                value={capacity} 
+                onChange={(e) => setCapacity(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                placeholder={`Enter ${equipmentType === 'lighting' ? 'number of fixtures' : 'capacity'}`}
               />
             </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Annual Operating Hours</label>
+              <input 
+                type="number" 
+                value={operatingHours} 
+                onChange={(e) => setOperatingHours(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                placeholder="Enter hours per year"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Energy Rate</label>
+              <div className="flex items-center">
+                <input 
+                  type="number" 
+                  value={energyRate} 
+                  onChange={(e) => setEnergyRate(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2" 
+                  placeholder="Enter energy rate"
+                />
+                <span className="ml-2 text-gray-500">$/kWh</span>
+              </div>
+            </div>
+            
+            <button 
+              onClick={calculateEfficiency} 
+              className="mt-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded"
+            >
+              Calculate Savings
+            </button>
           </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-medium mb-4">Usage & Costs</h3>
           
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Operating Hours Per Day
-              </label>
-              <input
-                type="number"
-                value={formData.hoursPerDay}
-                onChange={(e) => handleInputChange('hoursPerDay', parseInt(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              />
+          <div>
+            <h3 className="text-lg font-semibold mb-4">Analysis Results</h3>
+            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+              {!annualSavings ? (
+                <p className="text-gray-500 italic">Results will appear here after calculation.</p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Annual Cost Savings:</span>
+                    <span className="text-emerald-600 font-semibold">${annualSavings}</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Simple Payback Period:</span>
+                    <span className="text-emerald-600 font-semibold">{paybackPeriod} years</span>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">Annual CO₂ Reduction:</span>
+                    <span className="text-emerald-600 font-semibold">{co2Reduction} tons</span>
+                  </div>
+                </div>
+              )}
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Operating Days Per Year
-              </label>
-              <input
-                type="number"
-                value={formData.daysPerYear}
-                onChange={(e) => handleInputChange('daysPerYear', parseInt(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              />
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Efficiency Standards</h3>
+              <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <li>ASHRAE 90.1 Energy Standard</li>
+                <li>DOE Minimum Efficiency Standards</li>
+                <li>Energy Star Certification Requirements</li>
+                <li>IECC (International Energy Conservation Code)</li>
+              </ul>
             </div>
             
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Electricity Rate ($/kWh)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.electricityRate}
-                onChange={(e) => handleInputChange('electricityRate', parseFloat(e.target.value) || 0)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2"
-              />
-            </div>
-            
-            <div className="pt-4">
-              <button
-                onClick={calculateEfficiency}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md flex items-center justify-center"
-              >
-                <Calculator className="h-4 w-4 mr-2" />
-                Calculate Savings
-              </button>
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Additional Benefits</h3>
+              <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                <li>Improved comfort and indoor air quality</li>
+                <li>Reduced maintenance costs</li>
+                <li>Extended equipment life</li>
+                <li>Potential utility rebates and tax incentives</li>
+                <li>Enhanced building value and ESG performance</li>
+              </ul>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {showResults && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8">
-          <h3 className="text-lg font-medium text-green-800 mb-4">Energy Savings Results</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded-lg border border-green-100">
-              <h4 className="font-medium text-gray-700 mb-2">Annual Savings</h4>
-              <p className="text-2xl font-bold text-green-600">${results.annualSavings.toFixed(2)}</p>
-              <p className="text-sm text-gray-500 mt-1">
-                {results.savingsPercentage.toFixed(1)}% reduction in energy costs
-              </p>
-            </div>
-            
-            <div className="bg-white p-4 rounded-lg border border-green-100">
-              <h4 className="font-medium text-gray-700 mb-2">Current vs New Cost</h4>
-              <p className="text-lg font-medium text-red-500">${results.currentAnnualCost.toFixed(2)}/year</p>
-              <p className="text-lg font-medium text-green-500">${results.newAnnualCost.toFixed(2)}/year</p>
-            </div>
-            
-            <div className="bg-white p-4 rounded-lg border border-green-100">
-              <h4 className="font-medium text-gray-700 mb-2">Environmental Impact</h4>
-              <p className="text-lg font-medium text-green-600">{results.co2Reduction.toFixed(2)} kg CO2</p>
-              <p className="text-sm text-gray-500 mt-1">
-                Estimated annual reduction
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 rounded-lg p-6">
-        <div>
-          <h3 className="font-medium text-gray-700 mb-3">Typical Efficiency Ratings</h3>
-          <table className="min-w-full bg-white border border-gray-200 rounded-lg">
-            <thead>
-              <tr className="bg-gray-50">
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">System Type</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">Standard</th>
-                <th className="px-4 py-2 text-left text-sm font-medium text-gray-500">High-Efficiency</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr className="border-t border-gray-200">
-                <td className="px-4 py-2 text-sm">Air Conditioners (EER)</td>
-                <td className="px-4 py-2 text-sm">8-11</td>
-                <td className="px-4 py-2 text-sm">12-16+</td>
-              </tr>
-              <tr className="border-t border-gray-200">
-                <td className="px-4 py-2 text-sm">Heat Pumps (HSPF)</td>
-                <td className="px-4 py-2 text-sm">7-8.5</td>
-                <td className="px-4 py-2 text-sm">9-10+</td>
-              </tr>
-              <tr className="border-t border-gray-200">
-                <td className="px-4 py-2 text-sm">Furnaces (AFUE)</td>
-                <td className="px-4 py-2 text-sm">80-83%</td>
-                <td className="px-4 py-2 text-sm">90-98%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        
-        <div>
-          <h3 className="font-medium text-gray-700 mb-3">Energy-Saving Tips</h3>
-          <ul className="list-disc list-inside space-y-1 text-gray-600">
-            <li>Regular maintenance of equipment</li>
-            <li>Clean or replace air filters monthly</li>
-            <li>Seal ductwork to prevent leakage</li>
-            <li>Install programmable thermostats</li>
-            <li>Use economizers when appropriate</li>
-            <li>Consider variable speed drives</li>
-            <li>Implement proper building insulation</li>
-          </ul>
         </div>
       </div>
     </div>
